@@ -1,0 +1,27 @@
+.el-radio-group{
+		display: flex !important;
+		justify-content: left;
+		flex-direction: column;
+		align-items: center;
+	}
+.el-radio.is-bordered{
+	width: 80%;
+	margin-top: 2rem;
+	margin-left: 10px;
+}	
+.el-cascader-node>.el-radio, .el-radio:last-child{
+	margin-right: 30px;
+}
+body,html{
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	background: #EBEBEB;
+}
+ul,li{
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	border: none;
+}

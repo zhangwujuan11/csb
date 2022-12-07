@@ -69,7 +69,7 @@
 				　　　　"m+" : objDate.getMinutes(), //分
 				　　　　"s+" : objDate.getSeconds(), //秒
 				　　　　"q+" : Math.floor((objDate.getMonth()+3)/3), //季度
-				　　　　"S" : objDate.getMilliseconds() //毫秒
+				　　　　"S"  : objDate.getMilliseconds() //毫秒
 				　　};
 				　　if(/(y+)/.test(fmt))
 				　　　　fmt=fmt.replace(RegExp.$1, (objDate.getFullYear()+"").substr(4 - RegExp.$1.length));

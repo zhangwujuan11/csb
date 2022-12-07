@@ -22,6 +22,10 @@ const routes = [
   	  path:'/reset',
   	  name:'reset',
   	  component:()=>import('@/views/Reset.vue')
+  },{
+	  path:'/paysuccess',
+	  name:'paysuccess',
+	   component:()=>import('@/views/Paysuccess.vue')
   }
 ]
 

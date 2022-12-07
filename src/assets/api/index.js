@@ -107,3 +107,13 @@ export function resetlevtas(data){
 //   })
 //     })
 // }
+
+
+// gid   id
+export function gidid(data){
+	return axios({
+		url:'https://1to2to3.cn/quake-gid/global_id/id',
+		method:'post',
+		data
+	})
+}

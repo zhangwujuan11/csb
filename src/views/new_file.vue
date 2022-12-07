@@ -45,6 +45,7 @@
 		setsingernature,
 		valuesing,
 		levitas,
+		gidid
 	} from '@/assets/api/index.js'
 	import QRCode from 'qrcodejs2'
 	import number from '@/components/Mykey.vue'
@@ -53,7 +54,7 @@
 			return {
 				numm: null,
 				times: '',
-				text: "",
+				text: '',
 				codedd: '',
 				tetx: '',
 				dialogVisible: false,
@@ -61,6 +62,7 @@
 				indexNum: 0, //必填字段，为键盘索引，每个键盘必须具有唯一值
 				disbtn: false,
 				websock: null,
+				gid:''
 			}
 		},
 		components: {
@@ -69,15 +71,12 @@
 
 		created() {
 			//临时数据
-			this.$router.push({
-				path: '/',
-				query: {
-					id: 101112
-				}
-			})
-
-
-
+			// this.$router.push({
+			// 	path: '/',
+			// 	query: {
+			// 		id: 101112
+			// 	}
+			// })
 			if (this.$route.query.id != undefined) {
 				levitas(this.$route.query.id).then(res => {
 					let shid = res.data.data
@@ -91,15 +90,9 @@
 			} else {
 				this.dialogVisible = true
 			}
-			
-			if(this.$route.query.mid != undefined){
-				
-			}
 		},
 		
 		
-		mounted() {
-		},
 		methods: {
 			goback() {
 				this.$router.back()
@@ -112,7 +105,6 @@
 					this.disbtn = true
 				}
 				this.numm = nucolx
-
 			},
 			formatDate(objDate, fmt) {
 				var o = {
@@ -135,6 +127,7 @@
 			},
 			//公众号加服务窗
 			gowhere() {
+				
 				let code = ''
 				//设置随机字符
 				let random = new Array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
@@ -164,24 +157,22 @@
 				if (seconds.length == 1) {
 					seconds = "0" + seconds
 				}
-				let time = year + month + day + hour + minute + this.codedd
 				this.times = year + month + day + hour + minute + seconds
 				// 32位随机数
 				let arr = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i",
-					"j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
-				]
+							"j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 				let num = "";
 				for (var e = 0; e < 32; e++) {
 					num += arr[parseInt(Math.random() * 36)];
 				}
-
+				let datee = new Date(new Date().getTime() +8 * 3600*1000 + 55*1000)
 				import('@wenjingq/gen_header/gen_header.js').then((ress) => {
 					let contents = {
 						"mid": JSON.parse(localStorage.getItem('umsPay')).mid, //商户号需要配置,先固定
 						"tid": JSON.parse(localStorage.getItem('umsPay')).tid, //终端号
 						"totalAmount": this.numm * 100,
 						"requestTimestamp": this.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
-						"merOrderId": '14FG' + time,
+						"merOrderId": '14FG' + this.gid,
 						"instMid": 'QRPAYDEFAULT',
 						"attachedData": '门店消费', //商户附加数据
 						"notifyUrl": 'http://1.117.41.70:9003/ums/cb/notifyUrl', //支付结果通知地址
@@ -189,17 +180,24 @@
 						"orderDesc": '门店消费', //账单描述
 						"platformAmount": 0,
 						"originalAmount": this.numm * 100, //订单原始金额
-						"returnURL":'https://1to2to3.cn/umsH5/#/?id=' + JSON.parse(localStorage.getItem('umsPay')).id//失败跳回页面
+						"expireTime":datee.toJSON().substr(0, 19).replace('T', ' '),//订单过期时间
+						"returnUrl":'https://1to2to3.cn/umsH5/#/?id=' + JSON.parse(localStorage.getItem('umsPay')).id//失败跳回页面
 					}
 					let signature = ress.Signature.get_open_form_param(
-						"8a81c1be831e62880183c6537f4d1bc8",
-						"31cce8efd439471b9badc07468137224",
+						"8a81c1be831e62880183c6537f4d1bc8",//appid
+						"31cce8efd439471b9badc07468137224",//appkey
 						this.times,
 						num,
 						JSON.stringify(contents)
 					)
+					// 开始支付
+					let startPaydata={"task":{
+						"device": {
+							"quakeJava":{
+								"data":JSON.stringify({"cmd":"startPay","id":JSON.parse(localStorage.getItem('umsPay')).id,"merOrderId":"14FG" + this.gid}),
+									}}}}
+					this.websocketsend(JSON.stringify(startPaydata));
 					window.location.href = 'https://api-mop.chinaums.com/v1/netpay/webpay/pay?authorization=' + signature
-					
 				})
 			},
 			
@@ -211,24 +209,72 @@
 				if(typeof(WebSocket) === "undefined"){
 				  console.log("您的浏览器不支持WebSocket")
 				}else{
-				  const wsurl = "ws://k8s.1to2to3.cn:31052/connect?device_id=aaa";
-				  // 实例化 WebSocket
-				  this.websock = new WebSocket(wsurl);
-				  // 监听 WebSocket 连接
-				  this.websock.onopen = this.websocketonopen;
-				  // 监听 WebSocket 错误信息
-				  this.websock.onerror = this.websocketonerror;
-				  // 监听 WebSocket 消息
-				  this.websock.onmessage = this.websocketonmessage;
-				
-				  this.websock.onclose = this.websocketclose;
+					gidid({
+						"countOfID":1
+					}).then(res=>{
+						this.gid=res.data.data[0]
+						const wsurl = "wss://1to2to3.cn/antenna/connect?device_id=14FG" + this.gid;
+						// 实例化 WebSocket
+						this.websock = new WebSocket(wsurl);
+						// 监听 WebSocket 连接
+						this.websock.onopen = this.websocketonopen;
+						// 监听 WebSocket 错误信息
+						this.websock.onerror = this.websocketonerror;
+						// 监听 WebSocket 消息
+						this.websock.onmessage = this.websocketonmessage;
+						this.websock.onclose = this.websocketclose;
+					})
 				}
 			  },
 		 // 连接建立之后执行send方法发送数据
 		      websocketonopen(){
-		        console.log("socket连接成功")
-		        let actions = {"test":"12345"};
-		        this.websocketsend(JSON.stringify(actions));
+				  let acti ={
+				  		"task":{
+				  			"device": {
+				  				"quakeJava":{
+				  					"data":JSON.stringify({
+				  						"cmd":"flush",
+				  						"id":JSON.parse(localStorage.getItem('umsPay')).id,
+				  						"merOrderId":"14FG" + this.gid,
+				  						}),
+				  						}}},
+				  				}
+				let actions = {
+						"task":{
+							"device": {
+								"quakeJava":{
+									"data":JSON.stringify({"cmd":"open","merOrderId":"14FG" + this.gid,"id":JSON.parse(localStorage.getItem('umsPay')).id}),
+										}}},
+								}
+						console.log("ws连接成功")
+						if (this.$route.query.mid != undefined){
+							let faildata={
+								"task":{
+									"device": {
+										"quakeJava":{
+											"data":JSON.stringify(
+											{"cmd":"finalize",
+											"id":JSON.parse(localStorage.getItem('umsPay')).id,
+											"merOrderId":this.$route.query.merOrderId}
+											),
+												}}}
+							}
+							
+							this.websocketsend(JSON.stringify(faildata));
+							this.websocketsend(JSON.stringify(actions));
+							let _this=this
+							window.setInterval(() => {
+							setTimeout(_this.websocketsend(JSON.stringify(acti)), 0)
+							},500)
+						}else{
+							
+							this.websocketsend(JSON.stringify(actions));
+							let _this=this
+							 window.setInterval(() => {
+							        setTimeout(_this.websocketsend(JSON.stringify(acti)), 0)
+							        },500)
+						}
+						
 		      },
 		      // 连接建立失败重连
 		      websocketonerror(){
@@ -237,12 +283,13 @@
 		      },
 		      // 数据接收
 		      websocketonmessage(e){
-		        const resdata = JSON.parse(e.data);
+		        const resdata = JSON.parse(e);
 		        console.log(resdata);
 		      },
 		      // 数据发送
 		      websocketsend(Data){
 		        this.websock.send(Data);
+				console.log(5656565)
 		      },
 		      // 关闭
 		      websocketclose(e){

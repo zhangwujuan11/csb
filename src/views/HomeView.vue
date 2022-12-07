@@ -60,10 +60,6 @@
 			}
 		},
 		created() {
-			this.$router.push({
-				path:'/',
-				query:{id:101112}
-			})
 			
 			// this.init();
 			

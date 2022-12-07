@@ -21,9 +21,21 @@
 			<el-form-item label="终端号" prop="tid">
 			  <el-input v-model="ruleForm.tid"></el-input>
 			</el-form-item>
-			<el-form-item label="音响ID组" prop="deviceIds">
+			<!-- <el-form-item label="音响ID组" prop="deviceIds">
 			  <el-input v-model="ruleForm.deviceIds"></el-input>
-			</el-form-item>
+			</el-form-item> -->
+			<el-form-item
+			    v-for="(deviceId, index) in ruleForm.deviceIds"
+			    :label="'音响ID' + (index + 1)"
+			    :key="deviceId.index"
+				:prop="'deviceIds.' + index + '.value'"
+			  >
+			   <p class="seridpbox">
+				   <el-input v-model="deviceId.value"></el-input>
+				   <el-button @click.prevent="removeDomain(deviceId)">删除</el-button>
+			   </p> 
+			  </el-form-item>
+			  <p style="width: 100%;text-align: center;"><el-button @click="addDomain" icon="el-icon-plus">新增音响ID</el-button></p>
 		    <el-form-item>
 		      <el-button type="primary" @click="submitForm('ruleForm')">立即创建</el-button>
 		    </el-form-item>
@@ -49,7 +61,9 @@
 						tid:'',
 						mchName:'',
 						id:'',
-						deviceIds:''
+						deviceIds:[{
+							value:''
+						}],
 					},
 				  rules: {
 						  mid: [
@@ -106,7 +120,23 @@
 			            return false;
 			          }
 			        });
-			      }
+			      },
+		  // 增加设备
+		   addDomain() {
+		          this.ruleForm.deviceIds.push({
+		            value: '',
+		          });
+				  // console.log(this.ruleForm.deviceIds)
+			},
+			// 删除设备
+			removeDomain(item) {
+			        var index = this.ruleForm.deviceIds.indexOf(item)
+			        if (index !== -1) {
+			          this.ruleForm.deviceIds.splice(index, 1)
+					  
+			        }
+					// console.log(this.ruleForm.deviceIds)
+			}
 		}
 	}
 </script>
@@ -131,5 +161,14 @@
 		padding-top: 20px;
 		display: flex;
 		justify-content: center;
+	}
+	.seridpbox{
+		width: 100%;
+		display:flex;
+		align-items: center;
+		margin: 0;
+	}
+	.seridpbox .el-input__inner{
+		width:90%;
 	}
 </style>

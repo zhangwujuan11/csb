@@ -8,8 +8,9 @@
 		  :close-on-click-modal="false"
 		  :show-close="false"
 		  >
+		  
 		  <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
-			  <el-form-item label="商户名称" prop="mchName">
+			  <el-form-item label="商户名" prop="mchName">
 			    <el-input  v-model="ruleForm.mchName"></el-input>
 			  </el-form-item>
 			  <el-form-item label="商户ID" prop="id">
@@ -21,9 +22,35 @@
 			<el-form-item label="终端号" prop="tid">
 			  <el-input v-model="ruleForm.tid"></el-input>
 			</el-form-item>
-			<!-- <el-form-item label="音响ID组" prop="deviceIds">
-			  <el-input v-model="ruleForm.deviceIds"></el-input>
-			</el-form-item> -->
+			<el-form-item label="支付倒计时(s)" prop="expireTime">
+			  <el-input v-model="ruleForm.expireTime" type="number"></el-input>
+			</el-form-item>
+			
+			
+			
+			
+			
+			
+			
+			<el-form-item label="商户描述">
+			  <el-input type="number"></el-input>
+			</el-form-item>
+			<el-form-item label="支付后页面">
+				<el-checkbox-group v-model="checkList">
+				    <el-checkbox label="氢信公众号通知"></el-checkbox>
+				    <el-checkbox label="商户短信通知"></el-checkbox>
+				  </el-checkbox-group>
+			</el-form-item>
+			<el-form-item v-if="telshow" label="手机号">
+				<el-input  v-model="tel" ></el-input>
+			</el-form-item>
+			
+			
+			
+			
+			
+			
+			
 			<el-form-item
 			    v-for="(deviceId, index) in ruleForm.deviceIds"
 			    :label="'音响ID' + (index + 1)"
@@ -34,7 +61,7 @@
 				   <el-input v-model="deviceId.value"></el-input>
 				   <el-button @click.prevent="removeDomain(deviceId)">删除</el-button>
 			   </p> 
-			  </el-form-item>
+			</el-form-item>
 			  <p style="width: 100%;text-align: center;"><el-button @click="addDomain" icon="el-icon-plus">新增音响ID</el-button></p>
 		    <el-form-item>
 		      <el-button type="primary" @click="submitForm('ruleForm')">立即创建</el-button>
@@ -49,6 +76,7 @@
 	import {levitas,levcreat} from '@/assets/api/index.js'
 	import QRCode from 'qrcodejs2'
 	import vueQr from 'vue-qr'
+	
 	export default{
 		
 			data() {
@@ -56,11 +84,13 @@
 					sshoww:true,
 					imageUrl: require("@/assets/logo.png"),
 					qrurl:'',
+					ttru:false,
 					ruleForm: {
 						mid:'',
 						tid:'',
 						mchName:'',
 						id:'',
+						expireTime:30,
 						deviceIds:[{
 							value:''
 						}],
@@ -79,10 +109,15 @@
 						  		{ required: true, message: '请输入商户id', trigger: 'blur' }
 						  ]
 						},
+				
+				checkList:[],
+				tel:'',
+				telshow:false
 				}
 			},
 			components: {
-			      vueQr
+			      vueQr,
+				  Keyboard
 			    },
 		methods:{
 			formatDate(objDate,fmt){
@@ -123,10 +158,14 @@
 			      },
 		  // 增加设备
 		   addDomain() {
-		          this.ruleForm.deviceIds.push({
-		            value: '',
-		          });
-				  // console.log(this.ruleForm.deviceIds)
+				   for(var i=0;i<this.ruleForm.deviceIds.length;i++){
+				   		this.ttru =Boolean(this.ruleForm.deviceIds[i].value != '') 
+				   }
+				   if(this.ttru){
+				   	   this.ruleForm.deviceIds.push({
+				   		 value: ''
+				   	   });
+				   }
 			},
 			// 删除设备
 			removeDomain(item) {
@@ -135,8 +174,17 @@
 			          this.ruleForm.deviceIds.splice(index, 1)
 					  
 			        }
-					// console.log(this.ruleForm.deviceIds)
 			}
+		},
+		watch:{
+			checkList(val){
+			if(val.includes("商户短信通知")){
+				this.telshow=true
+			}else{
+				this.telshow=false
+			}
+			}
+			
 		}
 	}
 </script>

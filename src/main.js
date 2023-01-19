@@ -6,7 +6,6 @@ import ElementUI from 'element-ui'
 import { Message } from "element-ui"
 import 'element-ui/lib/theme-chalk/index.css'
 Vue.use(ElementUI)
-
 import '@/assets/comm.css'
 
 Vue.config.productionTip = false
@@ -55,20 +54,6 @@ Vue.prototype.$message = $message;
 //如果用要使用 `this.$message.closeAll()`则加上下面
 Vue.prototype.$message.closeAll =Message.closeAll;
 
-
-// 地图测试
-// import AMap from 'vue-amap';
-// Vue.use(AMap);
- 
-  // 初始化vue-amap
-// AMap.initAMapApiLoader({
-//   // 高德key
-//   key: '你的key',
-//   // 插件集合 （插件按需引入）
-//   plugin: ['AMap.Geolocation']
-// })
-// import VConsole from 'vconsole';
-//  let vConsole = new VConsole();
 
 new Vue({
   router,

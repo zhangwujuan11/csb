@@ -13,19 +13,26 @@ const routes = [
 	  path:'/payment',
 	  name:'payment',
 	  component:()=>import('@/views/Payment.vue')
-  },{
-	  path:'/nesindex',
-	  name:'nesindex',
-	  component:()=>import('@/views/Table.vue')
   },
+  // {
+	 //  path:'/nesindex',
+	 //  name:'nesindex',
+	 //  component:()=>import('@/views/Table.vue')
+  // },
+  // {
+  // 	  path:'/reset',
+  // 	  name:'reset',
+  // 	  component:()=>import('@/views/Reset.vue')
+  // },
   {
-  	  path:'/reset',
-  	  name:'reset',
-  	  component:()=>import('@/views/Reset.vue')
-  },{
 	  path:'/paysuccess',
 	  name:'paysuccess',
 	   component:()=>import('@/views/Paysuccess.vue')
+  },
+  {
+  	  path:'/scebdge',
+  	  name:'scebdge',
+  	   component:()=>import('@/views/HomeView.vue')
   }
 ]
 

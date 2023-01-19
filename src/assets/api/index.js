@@ -50,7 +50,9 @@ export function levitas(data) {
 				"query": {
 					"and": [{
 						"match": {
-							"id": data
+							"id": data,
+							"isDel":0
+							
 						}
 					}]
 				}

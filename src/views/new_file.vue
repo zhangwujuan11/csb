@@ -14,15 +14,29 @@
 		</ul>
 		<ul class="payemo">
 			<li class="paylif">
-				<span>付款金额：</span>
+				<span >付款金额：</span>
 				<div class="paynnumm">
-					￥<number :index-num="indexNum" @keyboard-input="handleKeyBoard" :numberDis="false">
-					</number>元
+					￥
+					<span  @click="mykeybor">
+						<el-input readonly class="paynuminput" v-model="currValue"></el-input>
+					</span>
+					<!-- {{currValue}} -->
+					 <Keyboard
+					 id="cuskeyboard"
+					 class="keyboard"
+					 :end="isEnd"
+					 :pattern="keyboardpattern"
+					 :value="currValue"
+					 :type="valueType"
+					 @changekey="changekey"
+					 @makesure="confirm"
+					 ></Keyboard>
+					元
 				</div>
 			</li>
 			<li class="paynumt">
 				付款附言：
-				<el-input type="text" placeholder="60字以内" maxlength="60" v-model="tetx"></el-input>
+				<el-input  @blur="keyboardpattern='none'" type="text" placeholder="60字以内" maxlength="60" v-model="tetx"></el-input>
 			</li>
 		</ul>
 
@@ -34,9 +48,6 @@
 		 :show-close="false">
 			<span>请联系工作人员完善商户信息</span>
 		</el-dialog>
-		
-		
-		<!-- <iframe :src='payUrl'>  </iframe> -->
 	</div>
 </template>
 
@@ -48,64 +59,89 @@
 		gidid
 	} from '@/assets/api/index.js'
 	import QRCode from 'qrcodejs2'
-	import number from '@/components/Mykey.vue'
+	// 金额键盘
+	import Keyboard from '@/components/Numkeybor.vue';
 	export default {
 		data() {
 			return {
 				numm: null,
 				times: '',
-				text: '',
 				codedd: '',
 				tetx: '',
 				dialogVisible: false,
 				mhaname: '我的商铺',
-				indexNum: 0, //必填字段，为键盘索引，每个键盘必须具有唯一值
 				disbtn: false,
 				websock: null,
-				gid:''
+				gid:'',
+				expireTime:null,//订单过期时间
+				
+				// 金额键盘
+				  isEnd: false,  // 是否显示键盘
+				  keyboardpattern: "none",
+				  currValue: '',
+				  valueType: false, //true:整数，false小数
 			}
 		},
-		components: {
-			number
-		},
-
 		created() {
 			//临时数据
 			// this.$router.push({
 			// 	path: '/',
 			// 	query: {
-			// 		id: 101112
+			// 		id: 100013,
+			// 		totalAmount:2
 			// 	}
 			// })
+			
 			if (this.$route.query.id != undefined) {
 				levitas(this.$route.query.id).then(res => {
 					let shid = res.data.data
 					if (shid.length == 0) {
 						this.dialogVisible = true
 					} else {
+						console.log(shid[0].mchName)
 						localStorage.setItem("umsPay", JSON.stringify(shid[0]))
 						this.mhaname = shid[0].mchName
+						if(shid[0].expireTime == null){
+							this.expireTime=30
+						}else{
+							this.expireTime=shid[0].expireTime
+						}
 					}
 				})
 			} else {
 				this.dialogVisible = true
 			}
+			if(this.$route.query.totalAmount!= undefined){
+				this.currValue=Number(this.$route.query.totalAmount)/100
+			}
 		},
-		
+		  components: {
+		    Keyboard
+		  },
 		
 		methods: {
-			goback() {
-				this.$router.back()
-			},
-			handleKeyBoard(value) {
-				let nucolx = Number(value)
-				if (nucolx > 0) {
-					this.disbtn = false
-				} else {
-					this.disbtn = true
+			mykeybor(){
+				if(this.keyboardpattern == "none"){
+					this.keyboardpattern = "block"
+				}else{
+					this.keyboardpattern = "none"
 				}
-				this.numm = nucolx
 			},
+			// 金额键盘
+			 changekey(value) { 
+			        let val = value.join(""); // 将拿到的值拼接  5.23
+					this.currValue=val
+					this.$forceUpdate() 
+					if(Number(this.currValue)>0){
+						this.disbtn = false
+					}else{
+						this.disbtn = true
+					}
+			    },
+			// confirm(value) {
+			//    console.log("12")
+			//  },
+			
 			formatDate(objDate, fmt) {
 				var o = {
 					"M+": objDate.getMonth() + 1, //月份
@@ -127,7 +163,6 @@
 			},
 			//公众号加服务窗
 			gowhere() {
-				
 				let code = ''
 				//设置随机字符
 				let random = new Array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
@@ -170,18 +205,18 @@
 					let contents = {
 						"mid": JSON.parse(localStorage.getItem('umsPay')).mid, //商户号需要配置,先固定
 						"tid": JSON.parse(localStorage.getItem('umsPay')).tid, //终端号
-						"totalAmount": this.numm * 100,
+						"totalAmount":((Number(this.currValue) * 100)).toFixed(0),
 						"requestTimestamp": this.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),
 						"merOrderId": '14FG' + this.gid,
 						"instMid": 'QRPAYDEFAULT',
 						"attachedData": '门店消费', //商户附加数据
 						"notifyUrl": 'http://1.117.41.70:9003/ums/cb/notifyUrl', //支付结果通知地址
 						"srcReserve": '111', //请求系统预留字段
-						"orderDesc": '门店消费', //账单描述
+						"orderDesc": this.tetx, //账单描述
 						"platformAmount": 0,
-						"originalAmount": this.numm * 100, //订单原始金额
+						"originalAmount": ((Number(this.currValue) * 100)).toFixed(0), //订单原始金额
 						"expireTime":datee.toJSON().substr(0, 19).replace('T', ' '),//订单过期时间
-						"returnUrl":'https://1to2to3.cn/umsH5/#/?id=' + JSON.parse(localStorage.getItem('umsPay')).id//失败跳回页面
+						"returnUrl":'https://1to2to3.cn/umsH5/#/paysuccess?id=' + JSON.parse(localStorage.getItem('umsPay')).id//失败跳回页面
 					}
 					let signature = ress.Signature.get_open_form_param(
 						"8a81c1be831e62880183c6537f4d1bc8",//appid
@@ -190,11 +225,24 @@
 						num,
 						JSON.stringify(contents)
 					)
+					let paysuccessdata={
+						"merOrderId": '14FG' + this.gid,//订单号
+						"orderDesc":this.tetx,//账单描述
+						"requestTimestamp":this.formatDate(new Date(), "yyyy-MM-dd HH:mm:ss"),//账单时间
+						"totalAmount": ((Number(this.currValue) * 100)).toFixed(0)//消费金额
+					}
+					localStorage.setItem("paysuccess",JSON.stringify(paysuccessdata))//支付成功页面需要的信息
 					// 开始支付
 					let startPaydata={"task":{
 						"device": {
 							"quakeJava":{
-								"data":JSON.stringify({"cmd":"startPay","id":JSON.parse(localStorage.getItem('umsPay')).id,"merOrderId":"14FG" + this.gid}),
+								"data":JSON.stringify(
+								{
+									"cmd":"startPay",
+									"id":JSON.parse(localStorage.getItem('umsPay')).id,
+									"merOrderId":"14FG" + this.gid,
+									"expireTime":this.expireTime
+									}),
 									}}}}
 					this.websocketsend(JSON.stringify(startPaydata));
 					window.location.href = 'https://api-mop.chinaums.com/v1/netpay/webpay/pay?authorization=' + signature
@@ -228,6 +276,7 @@
 			  },
 		 // 连接建立之后执行send方法发送数据
 		      websocketonopen(){
+				  // ws监听传输 
 				  let acti ={
 				  		"task":{
 				  			"device": {
@@ -239,47 +288,52 @@
 				  						}),
 				  						}}},
 				  				}
+				// ws打开传输				
 				let actions = {
 						"task":{
 							"device": {
 								"quakeJava":{
-									"data":JSON.stringify({"cmd":"open","merOrderId":"14FG" + this.gid,"id":JSON.parse(localStorage.getItem('umsPay')).id}),
+									"data":JSON.stringify({"cmd":"open",
+									"merOrderId":"14FG" + this.gid,
+									"id":JSON.parse(localStorage.getItem('umsPay')).id}),
 										}}},
 								}
-						console.log("ws连接成功")
-						if (this.$route.query.mid != undefined){
-							let faildata={
-								"task":{
-									"device": {
-										"quakeJava":{
-											"data":JSON.stringify(
-											{"cmd":"finalize",
-											"id":JSON.parse(localStorage.getItem('umsPay')).id,
-											"merOrderId":this.$route.query.merOrderId}
-											),
-												}}}
-							}
-							
-							this.websocketsend(JSON.stringify(faildata));
-							this.websocketsend(JSON.stringify(actions));
-							let _this=this
-							window.setInterval(() => {
+				// 支付失败传输
+				let faildata={
+					"task":{
+						"device": {
+							"quakeJava":{
+								"data":JSON.stringify(
+								{"cmd":"finalize",
+								"id":JSON.parse(localStorage.getItem('umsPay')).id,
+								"merOrderId":this.$route.query.merOrderId}
+								),
+							}}}
+				}
+				console.log("ws连接成功")
+				if (this.$route.query.status=='WAIT_BUYER_PAY'){
+					// alert("失败开始传输")//顾客取消支付回来时
+					
+					this.websocketsend(JSON.stringify(actions));
+					this.websocketsend(JSON.stringify(faildata));
+					let _this=this
+					window.setInterval(() => {
+					setTimeout(_this.websocketsend(JSON.stringify(acti)), 0)
+					},500)
+				}else{
+					// alert("正常开始传输")
+					this.websocketsend(JSON.stringify(actions));
+					let _this=this
+					 window.setInterval(() => {
 							setTimeout(_this.websocketsend(JSON.stringify(acti)), 0)
 							},500)
-						}else{
-							
-							this.websocketsend(JSON.stringify(actions));
-							let _this=this
-							 window.setInterval(() => {
-							        setTimeout(_this.websocketsend(JSON.stringify(acti)), 0)
-							        },500)
-						}
+				}
 						
 		      },
 		      // 连接建立失败重连
 		      websocketonerror(){
 		        console.log("连接错误");
-		        this.initWebSocket();
+		        // this.initWebSocket();
 		      },
 		      // 数据接收
 		      websocketonmessage(e){
@@ -289,7 +343,6 @@
 		      // 数据发送
 		      websocketsend(Data){
 		        this.websock.send(Data);
-				console.log(5656565)
 		      },
 		      // 关闭
 		      websocketclose(e){
@@ -306,6 +359,11 @@
 		  //离开路由之后断开 websocket 连接
 		  this.websock.close(); 
 		},
+		
+		
+		
+		
+		
 	}
 </script>
 
@@ -351,7 +409,8 @@
 		border-radius: 4px;
 		padding: 8px;
 		margin-top: 20px;
-		margin-bottom: 20px;
+		margin-bottom: 14px;
+		padding-bottom: 0;
 	}
 
 	.payemo li:first-child {
@@ -383,4 +442,16 @@
 	.paynumt {
 		padding-top: 10px;
 	}
+	.paynuminput{
+		width: 100px;
+	}
+	
+	
+	
+	
+	input:disabled,textarea:disabled{
+	    opacity: 1;
+	    -webkit-text-fill-color: red;
+	  }
+	
 </style>

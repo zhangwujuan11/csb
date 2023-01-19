@@ -4,9 +4,12 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"> -->
+	<meta http-equiv="X-Frame-Options" content="deny">
+	 <meta http-equiv="pragma" content="no-cache">
+	<meta http-equiv="cache-control" content="no-cache">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
-	<!--  <script type="text/javascript" charset="UTF-8" src="https://wx.gtimg.com/pay_h5/goldplan/js/jgoldplan-1.0.0.js"></script> -->
+	 <script type="text/javascript" charset="UTF-8" src="https://wx.gtimg.com/pay_h5/goldplan/js/jgoldplan-1.0.0.js"></script>
     <title>顶顶收银台</title>
   </head>
   <body>
@@ -16,12 +19,16 @@
     <div id="app"></div>
     <!-- built files will be auto injected -->
   </body>
-   <script type="text/javascript" charset="UTF-8" src="https://wx.gtimg.com/pay_h5/goldplan/js/jgoldplan-1.0.0.js"></script>
   <script type="text/javascript">
-      window.onload = function () {
-          var mchData = {action: 'jumpOut', jumpOutUrl: 'https://1to2to3.cn/umsH5/#/paysuccess?id=' + JSON.parse(localStorage.getItem('umsPay')).id};
-          var postData = JSON.stringify(mchData);
-          parent.postMessage(postData, 'https://payapp.weixin.qq.com');
-      }
+	  // window.onload=function(){
+	  // 　　var mchData ={action:'onIframeReady',displayStyle:'SHOW_CUSTOM_PAGE'};
+	  // 　　var postData = JSON.stringify(mchData);
+	  // 　　parent.postMessage(postData,'https://payapp.weixin.qq.com');
+	  // };
+  //     document.getElementById("toOrder").onclick = function () {
+  //         let mchData = {action: 'jumpOut', jumpOutUrl: 'https://1to2to3.cn/umsH5/#/paysuccess?id=' + JSON.parse(localStorage.getItem('umsPay')).id};
+  //         let postData = JSON.stringify(mchData);
+  //        parent.postMessage(postData, 'https://payapp.weixin.qq.com');
+  //     }
   </script>
 </html>
